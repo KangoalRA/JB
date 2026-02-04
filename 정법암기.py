@@ -2,57 +2,86 @@ import streamlit as st
 import random
 
 # --------------------------------------------------------------------------
-# 1. 페이지 기본 설정 및 스타일
+# 1. 페이지 기본 설정 및 스타일 (아이보리 테마 & 큰 글씨 적용)
 # --------------------------------------------------------------------------
 st.set_page_config(
-    page_title="정치와 법 전단원 통합 마스터",
+    page_title="정치와 법 마스터 (오답노트 강화판)",
     page_icon="⚖️",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="centered",
+    initial_sidebar_state="collapsed"
 )
 
 st.markdown("""
     <style>
-    .main { background-color: #F8F9FA; }
+    /* 전체 배경 아이보리색 변경 */
+    .stApp {
+        background-color: #FDFCF0;
+    }
+    .main {
+        background-color: #FDFCF0;
+    }
+    
+    /* 문제 텍스트 크기 확대 및 스타일 */
+    .question-text {
+        font-size: 26px !important;
+        font-weight: 800 !important;
+        color: #2D3748;
+        line-height: 1.5;
+        margin-bottom: 20px;
+        padding: 20px;
+        background-color: #FFFFFF;
+        border-radius: 15px;
+        border: 2px solid #E2E8F0;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    
+    /* 버튼 스타일 (크고 누르기 편하게) */
     .stButton>button { 
         width: 100%; 
-        border-radius: 12px; 
+        border-radius: 15px; 
         font-weight: 700; 
+        font-size: 18px;
         height: auto; 
-        padding: 12px;
+        padding: 15px;
+        border: 2px solid #E2E8F0;
+        background-color: white;
+        color: #4A5568;
         transition: all 0.2s;
-        border: 1px solid #E2E8F0;
     }
     .stButton>button:hover { 
-        transform: scale(1.01); 
+        transform: translateY(-2px); 
         border-color: #3182CE;
         color: #3182CE;
+        background-color: #EBF8FF;
     }
+    
+    /* 해설 박스 스타일 */
     .explanation-box { 
         background-color: #2D3748; 
         color: #F7FAFC; 
-        padding: 20px; 
+        padding: 25px; 
         border-radius: 15px; 
-        border-left: 6px solid #4FD1C5; 
-        margin-top: 15px; 
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        font-size: 0.95em;
+        border-left: 8px solid #4FD1C5; 
+        margin-top: 20px; 
+        font-size: 1.1em;
         line-height: 1.6;
     }
-    .keyword-pool { 
-        background-color: white; 
-        padding: 20px; 
-        border-radius: 20px; 
-        border: 2px dashed #CBD5E0;
-        margin-top: 20px;
+    
+    /* 진행바 스타일 */
+    .stProgress > div > div > div > div {
+        background-color: #3182CE;
     }
-    h1, h2, h3, h4 { font-family: 'Pretendard', sans-serif; letter-spacing: -0.5px; }
-    .block-container { padding-top: 2rem; padding-bottom: 5rem; }
+    
+    /* 헤더 폰트 */
+    h1, h2, h3 { 
+        font-family: 'Pretendard', sans-serif; 
+        color: #1A202C;
+    }
     </style>
     """, unsafe_allow_html=True)
 
 # --------------------------------------------------------------------------
-# 2. 통합 데이터셋 (1~4단원 전체 데이터)
+# 2. 통합 데이터셋 (데이터 무결성 유지)
 # --------------------------------------------------------------------------
 FULL_DATA = {
     "CH1": {
@@ -102,7 +131,7 @@ FULL_DATA = {
                     {'text': '전문직(군사령관 등)은 선거 선출', 'category': '평의회'},
                     {'text': '도편 추방제 실시 여부 의결', 'category': '민회'}
                 ],
-                "tips": ["아테네는 직접 민주주의였으나, 장군 등 전문직은 선거로 뽑았습니다."]
+                "tips": ["전문 지식이 필요한 자리는 추첨이 아닌 '선거'로 뽑았습니다."]
             },
             "t4": {
                 "title": "04. 근대 시민 혁명",
@@ -115,7 +144,7 @@ FULL_DATA = {
                     {'text': '대의제의 원리 및 권력 분립의 원리 확립', 'category': '미국 독립혁명'},
                     {'text': '국왕의 권력을 제한하고 의회 중심 전통 수립', 'category': '영국 명예혁명'}
                 ],
-                "tips": ["영국은 입헌군주정, 미국과 프랑스는 공화정을 수립했습니다."]
+                "tips": ["근대 혁명은 저항권 사상을 기반으로 절대 왕정을 타도한 사건입니다."]
             },
             "t5": {
                 "title": "05. 사회 계약설 비교",
@@ -126,9 +155,9 @@ FULL_DATA = {
                     {'text': '성선설, 불평등 발생, 국민 주권', 'category': '루소'},
                     {'text': '전부 양도, 저항권 부정', 'category': '홉스'},
                     {'text': '일부 위임(신탁), 저항권 인정', 'category': '로크'},
-                    {'text': '양도 불가(직접 행사), 직접 민주정', 'category': '루소'},
-                    {'text': '2권 분립(입법 우위) 주장', 'category': '로크'},
-                    {'text': '일반 의지에 의한 통치 강조', 'category': '루소'}
+                    {'text': '양도 불가(직접 행사)', 'category': '루소'},
+                    {'text': '입헌 군주정 (대의제) 지향', 'category': '로크'},
+                    {'text': '직접 민주주의 (민주 공화정)', 'category': '루소'}
                 ],
                 "tips": ["저항권 인정 여부는 로크를 판별하는 가장 핵심 기준입니다."]
             },
@@ -202,7 +231,7 @@ FULL_DATA = {
                     {'text': '가장 오래된 권리, 포괄적', 'category': '자유권'},
                     {'text': '다른 기본권 실현의 전제 조건', 'category': '평등권'},
                     {'text': '선거권, 공무 담임권, 국민 투표권', 'category': '참정권'},
-                    {'text': '재판 청구권, 국가 배상 청구', 'category': '청구권'},
+                    {'text': '재판 청구권, 국가 배상 청구권', 'category': '청구권'},
                     {'text': '교육권, 근로권, 환경권 (현대적)', 'category': '사회권'}
                 ],
                 "tips": ["자유권은 가장 오래된 권리이며, 사회권은 바이마르 헌법에서 최초 명시되었습니다."]
@@ -225,10 +254,8 @@ FULL_DATA = {
                 "title": "12. 국민의 의무",
                 "options": ["고전적 의무", "현대적 의무"],
                 "keywords": [
-                    {'text': '납세의 의무', 'category': '고전적 의무'},
-                    {'text': '국방의 의무', 'category': '고전적 의무'},
-                    {'text': '교육을 받게 할 의무', 'category': '현대적 의무'},
-                    {'text': '근로의 의무', 'category': '현대적 의무'},
+                    {'text': '납세의 의무, 국방의 의무', 'category': '고전적 의무'},
+                    {'text': '교육을 받게 할 의무, 근로의 의무', 'category': '현대적 의무'},
                     {'text': '환경 보전의 의무', 'category': '현대적 의무'},
                     {'text': '재산권 행사의 공공복리 적합 의무', 'category': '현대적 의무'},
                     {'text': '권리이자 동시에 의무인 성격', 'category': '현대적 의무'}
@@ -382,7 +409,7 @@ FULL_DATA = {
                 { "q": "법률 집행을 위해 대통령령을 제정하는 행정 입법 지위는?", "correct": "행정부 수반", "wrongs": ["국가 원수", "사법 행정가"], "r": "법률 위임에 따른 집행 사무는 행정부 수반의 역할입니다." },
                 { "q": "헌법상 국군을 지휘하고 통솔하는 국군 통수권의 지위는?", "correct": "행정부 수반", "wrongs": ["국가 원수", "국방부 장관"], "r": "국군 통수는 행정부 최고 책임자로서의 지위입니다." },
                 { "q": "중요 정책을 국민 투표에 부칠 수 있는 권한의 지위는?", "correct": "국가 원수", "wrongs": ["행정부 수반", "선관위원장"], "r": "주권자인 국민에게 직접 묻는 중대 사안이므로 국가 원수 지위입니다." },
-                { "q": "대한민국 대통령의 임기와 중임에 대한 현행 헌법 규정은?", "correct": "5년 단임", "wrongs": ["4년 1차 중임", "7년 단임"], "r": "독재 방지를 위해 87년 개헌 이후 단임제가 유지되고 있습니다." },
+                { "q": "대한민국 대통령의 임기와 중임에 대한 현행 헌법 규정은?", "correct": "5년 단임", "wrongs": ["4년 중임", "7년 단임"], "r": "독재 방지를 위해 87년 개헌 이후 단임제가 유지되고 있습니다." },
                 { "q": "대통령이 재직 중 형사 기소되지 않는 불소추 특권의 예외는?", "correct": "내란 또는 외환의 죄", "wrongs": ["뇌물 수수", "직권 남용"], "r": "국가 존립을 위태롭게 하는 중죄가 아니면 기소되지 않습니다." }
             ]},
             "g13": { "title": "13. 대통령 권한 통제", "questions": [
@@ -392,7 +419,7 @@ FULL_DATA = {
                 { "q": "국회가 고위 공직자의 법 위반에 대해 파면을 요구하며 헌재에 넘기는 권한은?", "correct": "탄핵 소추권", "wrongs": ["해임 건의권", "국정 감사권"], "r": "탄핵 소추는 고위직의 법적 책임을 묻는 통제 수단입니다." },
                 { "q": "대통령 선포 계엄에 대해 국회가 해제를 요구할 때의 효력은?", "correct": "대통령은 지체 없이 해제하여야 함", "wrongs": ["대통령이 거부할 수 있음", "국무회의 재심의"], "r": "국회의 계엄 해제 요구는 강제적 구속력이 있습니다." },
                 { "q": "감사원은 직무상 독립되어 있으나 소속은 어디인가?", "correct": "대통령 직속", "wrongs": ["국회 소속", "대법원 소속"], "r": "소속은 대통령이지만 직무는 독립적으로 수행합니다." },
-                { "q": "대통령이 임명할 때 반드시 국회의 임명 동의가 필요한 직책은?", "correct": "대법원장, 헌재소장, 국무총리, 감사원장", "wrongs": ["장관, 검찰총장", "국정원장, 비서실장"], "r": "헌법상 4대 요직은 국회 동의가 필수입니다." },
+                { "q": "대통령이 임명할 때 반드시 국회의 임명 동의가 필요한 직책은?", "correct": "대법원장, 헌재소장, 국무총리, 감사원장", "wrongs": ["장관, 검찰총장", "국정원장"], "r": "헌법상 4대 요직은 국회 동의가 필수입니다." },
                 { "q": "대통령의 명령이 법률을 위반했을 때 이를 다투는 국민의 방법은?", "correct": "행정 소송 또는 헌법 소원", "wrongs": ["형사 고발", "민사 배상 청구"], "r": "위법한 행정 작용은 사법적 심사 대상이 됩니다." },
                 { "q": "대통령이 일반 사면을 단행하고자 할 때 반드시 거쳐야 하는 절차는?", "correct": "국회의 동의", "wrongs": ["법원의 승인", "검찰총장 제청"], "r": "사면권 남용 방지를 위해 일반 사면은 국회 동의가 필요합니다." },
                 { "q": "국회가 고위직 공무원 임명 전 도덕성과 능력을 검증하는 절차는?", "correct": "인사 청문회", "wrongs": ["자격 고사", "압수 수색"], "r": "인사 청문회는 대통령의 인사권을 통제하는 민주적 절차입니다." }
@@ -402,7 +429,7 @@ FULL_DATA = {
                 { "q": "국무총리 임명 시 대통령이 거쳐야 하는 필수 절차는?", "correct": "국회의 동의", "wrongs": ["국회의 선출", "국민 투표"], "r": "총리는 반드시 국회 동의를 얻어 임명합니다." },
                 { "q": "행정 각부 장관 임명 시 국무총리가 행사하는 권한은?", "correct": "제청권", "wrongs": ["직접 임명권", "거부권"], "r": "총리의 제청을 받아 대통령이 임명합니다." },
                 { "q": "감사원은 헌법상 어디에 소속되어 있는가?", "correct": "대통령", "wrongs": ["국회", "대법원"], "r": "소속은 대통령이나 직무는 독립됩니다." },
-                { "q": "감사원의 핵심 기능 두 가지는?", "correct": "회계 검사, 직무 감찰", "wrongs": ["재판 심리, 형 집행", "법안 제출, 예산 편성"], "r": "돈의 쓰임과 공무원의 비리를 감찰합니다." },
+                { "q": "감사원의 핵심 기능 두 가지는?", "correct": "회계 검사, 직무 감찰", "wrongs": ["재판 심리, 형 집행", "법안 제출"], "r": "돈의 쓰임과 공무원의 비리를 감찰합니다." },
                 { "q": "감사원장 임명 시 필요한 절차는?", "correct": "국회의 동의", "wrongs": ["국회의 직접 선출", "대통령의 단독 임명"], "r": "감사원장도 국회 동의가 필수인 직책입니다." },
                 { "q": "행정부 최고 정책 심의 기관인 국무회의의 의장은?", "correct": "대통령", "wrongs": ["국무총리", "행정자치부 장관"], "r": "대통령이 의장, 총리가 부의장입니다." },
                 { "q": "행정 각부의 장이 되기 위해 갖추어야 할 지위는?", "correct": "국무위원", "wrongs": ["국회의원", "차관 경력자"], "r": "국무위원 중에서 대통령이 각부 장관을 임명합니다." },
@@ -426,8 +453,8 @@ FULL_DATA = {
                 { "q": "헌법재판관 9명의 선출 및 지명 방식은?", "correct": "대통령·국회·대법원장 각 3인씩", "wrongs": ["대통령이 9명 전원 임명", "국회가 9명 전원 선출"], "r": "삼권 분립을 반영하여 3-3-3 구조를 가집니다." },
                 { "q": "헌법재판관 9명에 대한 형식상 최종 임명권자는?", "correct": "대통령", "wrongs": ["국회의장", "대법원장"], "r": "선출 주체는 달라도 임명장은 대통령이 줍니다." },
                 { "q": "헌법재판소장 임명 시 필요한 절차는?", "correct": "국회의 동의", "wrongs": ["재판관들의 호선", "대법원장 승인"], "r": "소장은 국회 동의를 얻어 대통령이 임명합니다." },
-                { "q": "헌법재판관의 임기는 몇 년인가?", "correct": "6년", "wrongs": ["4년", "5년"], "r": "6년의 임기를 가지며 연임이 가능합니다." },
-                { "q": "헌법재판관이 되기 위한 필수 자격은?", "correct": "법관의 자격을 가진 자", "wrongs": ["정치인 출신", "행정학 교수"], "r": "판사, 검사, 변호사 등 법조 자격이 있어야 합니다." },
+                { "q": "헌법재판관의 임기는 몇 년인가?", "correct": "6년", "wrongs": ["4년", "10년"], "r": "6년의 임기를 가지며 연임이 가능합니다." },
+                { "q": "헌법재판관이 되기 위한 필수 자격은?", "correct": "법관의 자격을 가진 자", "wrongs": ["정치인 출신", "고위 공무원"], "r": "판사, 검사, 변호사 등 법조 자격이 있어야 합니다." },
                 { "q": "재판관의 정치적 중립을 위해 엄격히 금지되는 행위는?", "correct": "정당 가입", "wrongs": ["저술 활동", "강의 활동"], "r": "정당 가입이나 정치 운동은 금지됩니다." },
                 { "q": "헌법재판관이 파면될 수 있는 법적 사유는?", "correct": "탄핵 또는 금고 이상의 형 선고", "wrongs": ["대통령의 해임 명령", "국민 소환"], "r": "신분 보장이 매우 강력합니다." },
                 { "q": "헌법재판소 심리를 위한 재판관 회의의 의사 정족수는?", "correct": "7인 이상의 출석", "wrongs": ["9인 전원", "과반수 출석"], "r": "최소 7명은 나와야 심리가 가능합니다." },
@@ -442,16 +469,16 @@ FULL_DATA = {
                 { "q": "위헌 결정이 내려진 형벌 조항의 효력은 원칙적으로 어떻게 되는가?", "correct": "소급하여 효력 상실", "wrongs": ["장래에만 효력 상실", "즉시 효력 정지"], "r": "처벌과 관련된 형벌 조항은 소급하여 무효가 되는 것이 원칙입니다." },
                 { "q": "법률의 위헌성은 인정하나 즉각 무효화 시 혼란이 우려될 때 내리는 변형 결정은?", "correct": "헌법 불합치 결정", "wrongs": ["단순 위헌 결정", "합헌 결정"], "r": "잠정적으로 효력을 유지시켜 입법자가 법을 수정할 기회를 줍니다." },
                 { "q": "재판 중인 법원이 헌재에 제청서를 제출할 때 반드시 기재해야 하는 것은?", "correct": "위헌이라고 판단하는 법리적 이유", "wrongs": ["피고인의 자백 여부", "검사의 구형량"], "r": "법리적으로 왜 위헌인지 구체적인 이유를 밝혀야 합니다." },
-                { "q": "일반 법원뿐만 아니라 군사재판을 진행하는 군사법원도 위헌 제청을 할 수 있는가?", "correct": "가능하다", "wrongs": ["불가능하다", "국방부 장관 승인 시 가능하다"], "r": "군사법원도 헌법상 법원의 지위를 가집니다." },
+                { "q": "일반 법원뿐만 아니라 군사재판을 진행하는 군사법원도 위헌 제청을 할 수 있는가?", "correct": "가능하다", "wrongs": ["불가능하다", "국방부 장관 승인 시"], "r": "군사법원도 헌법상 법원의 지위를 가집니다." },
                 { "q": "재판관 5명이 위헌 의견을 냈을 경우 위헌 법률 심판의 최종 결과는?", "correct": "합헌 결정", "wrongs": ["위헌 결정", "헌법 불합치 결정"], "r": "위헌 결정을 위해서는 재판관 6명 이상의 찬성이 필요합니다." },
                 { "q": "법원이 위헌 법률 심판을 제청하기 위해 거쳐야 하는 내부 의결 기관은?", "correct": "대법관 회의 또는 해당 재판부", "wrongs": ["국회 법사위", "국무회의"], "r": "법원 내부의 판단으로 제청 여부를 결정합니다." },
-                { "q": "위헌 결정의 효력 범위는 누구에게까지 미치는가?", "correct": "모든 국가 기관과 지자체를 구속함", "wrongs": ["당해 사건의 피고인에게만 미침", "해당 재판부에게만 미침"], "r": "헌재의 결정은 국가 전체에 대한 대세적 효력을 가집니다." },
+                { "q": "위헌 결정의 효력 범위는 누구에게까지 미치는가?", "correct": "모든 국가 기관과 지자체를 구속함", "wrongs": ["당해 사건의 피고인에게만", "해당 재판부에게만"], "r": "헌재의 결정은 국가 전체에 대한 대세적 효력을 가집니다." },
                 { "q": "위헌 법률 심판 절차에서 재판의 전제성이 상실된 경우 헌재가 내리는 결정은?", "correct": "각하 결정", "wrongs": ["위헌 결정", "합헌 결정"], "r": "요건을 갖추지 못한 경우 본안 심사 없이 종료하는 것이 각하입니다." },
                 { "q": "위헌 법률 심판 제청 신청을 할 수 있는 시기는 언제인가?", "correct": "당해 사건의 재판이 계속 중인 때", "wrongs": ["재판이 확정된 이후", "재판이 시작되기 전"], "r": "재판이 진행 중이어야 '전제성'이 인정됩니다." },
                 { "q": "법률 조항의 특정한 해석 범위만 위헌으로 선언하는 변형 결정의 명칭은?", "correct": "한정 위헌 결정", "wrongs": ["전부 위헌 결정", "입법 촉구 결정"], "r": "해석의 범위를 제한하여 위헌성을 제거하는 방식입니다." },
                 { "q": "위헌 법률 심판의 제청 주체가 될 수 없는 곳은?", "correct": "검찰청", "wrongs": ["대법원", "지방법원"], "r": "오직 재판을 수행하는 '법원'만이 제청의 주체입니다." },
                 { "q": "위헌으로 결정된 법률에 근거하여 유죄 판결을 받았던 자가 취할 수 있는 조치는?", "correct": "재심 청구", "wrongs": ["헌법소원 청구", "국가 배상 청구"], "r": "형벌 조항 위헌 시 과거의 판결에 대해 재심을 신청할 수 있습니다." },
-                { "q": "법원이 헌재의 합헌 결정을 받은 법률에 대해 다시 제청할 수 있는가?", "correct": "가능하다", "wrongs": ["불가능하다", "대통령 승인 시 가능하다"], "r": "이미 합헌 결정을 받았더라도 새로운 사유가 있다면 다시 제청할 수 있습니다." },
+                { "q": "법원이 헌재의 합헌 결정을 받은 법률에 대해 다시 제청할 수 있는가?", "correct": "가능하다", "wrongs": ["불가능하다", "대통령 승인 시"], "r": "이미 합헌 결정을 받았더라도 새로운 사유가 있다면 다시 제청할 수 있습니다." },
                 { "q": "위헌 법률 심판 제 제도가 보호하고자 하는 궁극적인 가치는?", "correct": "헌법의 최고 규범성 수호", "wrongs": ["재판의 신속한 종결", "행정부 권한 강화"], "r": "법률이 헌법 위에 설 수 없도록 감시하는 제도입니다." },
                 { "q": "위헌 법률 심판을 통해 실현되는 민주주의 원리는?", "correct": "법치주의와 권력 분립", "wrongs": ["직접 민주주의", "지방 분권주의"], "r": "입법권을 사법적으로 견제하여 법치주의를 수호합니다." }
             ]},
@@ -469,13 +496,13 @@ FULL_DATA = {
                 { "q": "헌법소원을 청구하기 위해 침해된 권리가 제3자가 아닌 본인의 것이어야 한다는 요건은?", "correct": "자기 관련성", "wrongs": ["직접성", "현재성"], "r": "남의 기본권 침해를 대신해서 청구할 수는 없습니다." },
                 { "q": "공권력 작용이 집행 행위 없이 청구인에게 직접 영향을 주어야 한다는 요건은?", "correct": "직접성", "wrongs": ["자기 관련성", "현재성"], "r": "중간 매개물 없이 바로 권리가 침해되어야 합니다." },
                 { "q": "과거가 아닌 지금 현재 권리가 침해되고 있어야 한다는 헌법소원의 요건은?", "correct": "현재성", "wrongs": ["자기 관련성", "직접성"], "r": "이미 끝났거나 장래에 일어날 막연한 일은 대상이 아닙니다." },
-                { "q": "국가 기관이나 지방 자치 단체도 원칙적으로 헌법소원을 청구할 수 있는가?", "correct": "불가능하다", "wrongs": ["가능하다", "대통령 승인 시 가능하다"], "r": "공기관은 권리를 누리는 주체가 아니라 보호해야 할 의무자이기 때문입니다." },
+                { "q": "국가 기관이나 지방 자치 단체도 원칙적으로 헌법소원을 청구할 수 있는가?", "correct": "불가능하다", "wrongs": ["가능하다", "대통령 승인 시"], "r": "공기관은 권리를 누리는 주체가 아니라 보호해야 할 의무자이기 때문입니다." },
                 { "q": "검사가 내린 처분 중 국민이 헌법소원으로 다툴 수 있는 대표적인 사례는?", "correct": "기소 유예 처분", "wrongs": ["정식 기소 처분", "수사 개시 결정"], "r": "자의적인 기소 유예는 평등권을 침해할 수 있어 소원의 대상이 됩니다." },
-                { "q": "외국인도 신체의 자유와 같은 보편적 인권이 침해되면 헌법소원을 청구할 수 있는가?", "correct": "가능하다", "wrongs": ["불가능하다", "영주권자만 가능하다"], "r": "인간의 권리에 해당한다면 외국인에게도 주체성을 인정합니다." },
+                { "q": "외국인도 신체의 자유와 같은 보편적 인권이 침해되면 헌법소원을 청구할 수 있는가?", "correct": "가능하다", "wrongs": ["불가능하다", "영주권자만"], "r": "인간의 권리에 해당한다면 외국인에게도 주체성을 인정합니다." },
                 { "q": "이미 판단이 내려진 사건에 대해 동일한 사유로 다시 헌법소원을 낼 수 없는 원칙은?", "correct": "일사부재리 원칙", "wrongs": ["일사부재의 원칙", "회기 계속의 원칙"], "r": "이미 확정된 판단에 대해서는 다시 다투지 못합니다." },
-                { "q": "헌법소원 심판을 청구할 때 헌법재판소에 납부해야 하는 비용은?", "correct": "무료", "wrongs": ["인지대 10만원", "승소 시 사후 정산"], "r": "국민의 권리 구제를 돕기 위해 심판 비용은 받지 않습니다." },
+                { "q": "헌법소원 심판을 청구할 때 헌법재판소에 납부해야 하는 비용은?", "correct": "무료", "wrongs": ["인지대 10만원", "승소 시 정산"], "r": "국민의 권리 구제를 돕기 위해 심판 비용은 받지 않습니다." },
                 { "q": "예외적으로 법원의 재판이 헌법소원의 대상이 되어 취소될 수 있는 경우는?", "correct": "위헌 결정된 법률을 적용한 재판", "wrongs": ["판사가 법리를 오해한 재판", "배심원단이 불공정한 재판"], "r": "헌재의 위헌 결정에 반하는 재판에 한해서만 극히 예외적으로 인정됩니다." },
-                { "q": "헌법소원 심판 제도의 주된 목적 두 가지는?", "correct": "기본권 구제와 헌법 질서 수호", "wrongs": ["범죄 처벌과 피해 배상", "정치 세력 견제와 정당 강화"], "r": "개인의 권리를 지킴과 동시에 국가 시스템의 정당성을 확보합니다." }
+                { "q": "헌법소원 심판 제도의 주된 목적 두 가지는?", "correct": "기본권 구제와 헌법 질서 수호", "wrongs": ["범죄 처벌과 피해 배상", "정치 세력 견제"], "r": "개인의 권리를 지킴과 동시에 국가 시스템의 정당성을 확보합니다." }
             ]},
             "g19": { "title": "19. 탄핵 심판", "questions": [
                 { "q": "고위 공직자의 탄핵을 의결하여 헌재에 소추하는 기관은?", "correct": "국회", "wrongs": ["법원", "검찰청"], "r": "국회가 소추(기소)를 담당합니다." },
@@ -483,7 +510,7 @@ FULL_DATA = {
                 { "q": "탄핵 결정을 내리기 위해 필요한 재판관 찬성 정족수는?", "correct": "6명 이상", "wrongs": ["5명 이상", "7명 이상"], "r": "공직 파면이라는 중대 결정이므로 6명이 필요합니다." },
                 { "q": "헌법재판소의 탄핵 결정이 가지는 가장 직접적인 효과는?", "correct": "해당 공직에서의 즉시 파면", "wrongs": ["징역 또는 벌금형 부과", "민사상 손해 배상"], "r": "징계의 최고 수준인 파면이 주 효과입니다." },
                 { "q": "대통령 탄핵 소추를 국회 본회의에서 의결하기 위한 요건은?", "correct": "국회 재적 의원 2/3 이상의 찬성", "wrongs": ["재적 과반수 찬성", "출석 2/3 찬성"], "r": "대통령 탄핵은 특히 엄격한 요건을 요구합니다." },
-                { "q": "국회의 탄핵 소추 의결서가 당사자에게 전달되었을 때 상황은?", "correct": "헌재 최종 결정 시까지 모든 권한 행사 정지", "wrongs": ["즉시 공직 박탈", "업무는 계속하되 급여 정지"], "r": "판결 전까지 직무를 못 하게 막습니다." },
+                { "q": "국회의 탄핵 소추 의결서가 당사자에게 전달되었을 때 상황은?", "correct": "헌재 최종 결정 시까지 모든 권한 행사 정지", "wrongs": ["즉시 공직 박탈", "업무는 계속"], "r": "판결 전까지 직무를 못 하게 막습니다." },
                 { "q": "헌법상 탄핵 소추의 유일한 사유가 되는 기준은?", "correct": "직무 집행에 있어 헌법이나 법률 위배", "wrongs": ["정치적 지도력 부족", "국민 지지율 하락"], "r": "반드시 법적 위반이 있어야 합니다." },
                 { "q": "탄핵 결정으로 파면된 공직자에 대한 민사 및 형사 책임은?", "correct": "면제되지 않으며 별도로 재판받음", "wrongs": ["탄핵으로 모든 책임 종료", "벌금형으로 대체"], "r": "파면과 형사 처벌은 별개입니다." },
                 { "q": "탄핵 심판 변론에서 국회를 대표하여 검사 역할을 맡는 자는?", "correct": "국회 법제사법위원장", "wrongs": ["검찰총장", "국회의장"], "r": "국회 법사위원장이 소추위원이 됩니다." },
@@ -493,8 +520,8 @@ FULL_DATA = {
                 { "q": "위헌 정당 해산 심판을 헌재에 청구할 수 있는 권한을 가진 곳은?", "correct": "정부", "wrongs": ["국회", "중앙선관위"], "r": "정부만이 제소권을 가집니다." },
                 { "q": "정당을 해산시키기 위해 헌법이 요구하는 실질적 사유는?", "correct": "정당의 목적이나 활동이 민주적 기본 질서에 위배", "wrongs": ["선거에서의 연속 패배", "소속 의원의 전원 탈당"], "r": "민주주의 체제 자체를 위협해야 해산됩니다." },
                 { "q": "정당 해산 결정을 내리기 위해 필요한 재판관 정족수는?", "correct": "6명 이상", "wrongs": ["5명 이상", "7명 이상"], "r": "정당 활동의 자유 보호를 위해 6명이 필요합니다." },
-                { "q": "헌재의 정당 해산 결정 시 소속 국회의원의 신분 변화는?", "correct": "소속 의원의 의원직을 상실함", "wrongs": ["무소속으로 지위 유지", "다른 정당으로 자동 승계"], "r": "해산 효과의 실효성을 위해 의원직도 잃습니다." },
-                { "q": "해산된 정당이 보유하고 있던 잔여 재산의 처리 방식은?", "correct": "모두 국가(국고)에 귀속됨", "wrongs": ["당원들에게 배분됨", "당 대표에게 증여됨"], "r": "재창당 자금으로 쓰이는 걸 막기 위해 국고로 귀속됩니다." },
+                { "q": "헌재의 정당 해산 결정 시 소속 국회의원의 신분 변화는?", "correct": "소속 의원의 의원직을 상실함", "wrongs": ["무소속으로 지위 유지", "다른 정당 승계"], "r": "해산 효과의 실효성을 위해 의원직도 잃습니다." },
+                { "q": "해산된 정당이 보유하고 있던 잔여 재산의 처리 방식은?", "correct": "모두 국가(국고)에 귀속됨", "wrongs": ["당원들에게 배분됨", "당 대표에게 증여"], "r": "재창당 자금으로 쓰이는 걸 막기 위해 국고로 귀속됩니다." },
                 { "q": "해산된 정당의 강령과 유사한 목적을 가진 대체 정당 창당은?", "correct": "동일 유사 목적의 창당이 금지됨", "wrongs": ["명칭만 다르면 즉시 가능", "대표자가 바뀌면 허용"], "r": "대체 정당 창당은 법으로 금지됩니다." },
                 { "q": "정부가 정당 해산을 헌재에 제소하기 전 거쳐야 하는 절차는?", "correct": "국무회의의 심의", "wrongs": ["국회의 임명 동의", "법원의 예비 심사"], "r": "중요 정책이므로 국무회의를 거쳐야 합니다." },
                 { "q": "정당 해산 심판 제도가 근거하고 있는 민주주의 수호 원리는?", "correct": "방어적 민주주의", "wrongs": ["다수결 만능주의", "절대 자유주의"], "r": "민주주의를 파괴하려는 세력으로부터 스스로를 보호합니다." },
@@ -510,7 +537,7 @@ FULL_DATA = {
                 { "q": "심판의 결정으로 내릴 수 있는 구제 조치는?", "correct": "피청구인의 처분을 취소하거나 무효화", "wrongs": ["공무원 파면", "지자체 강제 합병"], "r": "침해적 행위를 제거하여 질서를 회복합니다." },
                 { "q": "권한 쟁의 심판의 법적 성격은?", "correct": "객관적 기관 소송", "wrongs": ["주관적 권리 소송", "민사 배상 소송"], "r": "국가 질서를 잡는 소송입니다." },
                 { "q": "지자체의 자치 사무 권한 침해 여부 판단은 어디서 하는가?", "correct": "헌법재판소", "wrongs": ["대법원", "행정안전부"], "r": "자치권은 헌법상 권리이므로 헌재가 판단합니다." },
-                { "q": "국회와 정부 사이의 권한 분쟁도 심판 대상인가?", "correct": "예", "wrongs": ["아니오", "오직 법원에서만 다룸"], "r": "서로 다른 헌법 기관 간 다툼도 헌재가 해결합니다." },
+                { "q": "국회와 정부 사이의 권한 분쟁도 심판 대상인가?", "correct": "예", "wrongs": ["아니오", "오직 법원에서만"], "r": "서로 다른 헌법 기관 간 다툼도 헌재가 해결합니다." },
                 { "q": "권한 쟁의 심판의 결정은 누구를 구속하는가?", "correct": "피청구인인 국가기관 및 모든 국가기관", "wrongs": ["오직 청구인만", "해당 사건 판사만"], "r": "국가 전체에 대한 대세적 효력을 가집니다." }
             ]},
             "g22": { "title": "22. 상호 견제", "questions": [
@@ -818,7 +845,7 @@ FULL_DATA = {
 }
 
 # --------------------------------------------------------------------------
-# 3. 세션 상태 관리
+# 3. 세션 상태 관리 (진행도 유지)
 # --------------------------------------------------------------------------
 if 'main_ch' not in st.session_state: st.session_state.main_ch = "CH1"
 if 'sub_ch' not in st.session_state: st.session_state.sub_ch = list(FULL_DATA["CH1"]['chapters'].keys())[0]
@@ -829,6 +856,8 @@ if 'score' not in st.session_state: st.session_state.score = 0
 if 'answered' not in st.session_state: st.session_state.answered = False
 if 'quiz_opts' not in st.session_state: st.session_state.quiz_opts = []
 if 'wrong_pool' not in st.session_state: st.session_state.wrong_pool = []
+if 'is_retry_mode' not in st.session_state: st.session_state.is_retry_mode = False
+if 'current_questions' not in st.session_state: st.session_state.current_questions = []
 
 # --------------------------------------------------------------------------
 # 4. 사이드바 (내비게이션 및 리셋)
@@ -841,11 +870,14 @@ with st.sidebar:
     if new_main != st.session_state.main_ch:
         st.session_state.main_ch = new_main
         st.session_state.sub_ch = list(FULL_DATA[new_main]['chapters'].keys())[0]
+        # 상태 초기화
         st.session_state.matching_done = []
         st.session_state.q_idx = 0
         st.session_state.score = 0
         st.session_state.answered = False
+        st.session_state.selected_keyword = None
         st.session_state.wrong_pool = []
+        st.session_state.is_retry_mode = False
         st.rerun()
 
     chapters = FULL_DATA[st.session_state.main_ch]['chapters']
@@ -856,7 +888,9 @@ with st.sidebar:
         st.session_state.q_idx = 0
         st.session_state.score = 0
         st.session_state.answered = False
+        st.session_state.selected_keyword = None
         st.session_state.wrong_pool = []
+        st.session_state.is_retry_mode = False
         st.rerun()
 
     st.markdown("---")
@@ -865,6 +899,9 @@ with st.sidebar:
         st.session_state.q_idx = 0
         st.session_state.score = 0
         st.session_state.answered = False
+        st.session_state.selected_keyword = None
+        st.session_state.wrong_pool = []
+        st.session_state.is_retry_mode = False
         st.rerun()
 
 # --------------------------------------------------------------------------
@@ -905,7 +942,7 @@ if main_data['type'] == 'matching':
     
     if not remaining:
         st.balloons()
-        st.success("🎉 모든 키워드 분류를 완료했습니다!")
+        st.success("🎉 축하합니다! 모든 키워드 분류를 완료했습니다!")
     else:
         kw_cols = st.columns(4)
         for idx, kw in enumerate(remaining):
@@ -918,13 +955,22 @@ if main_data['type'] == 'matching':
 
 # [TYPE 2] 퀴즈 엔진 (2~4단원용)
 elif main_data['type'] == 'quiz':
-    questions = sub_data['questions']
+    # 현재 풀이할 문제 리스트 설정 (일반 모드 vs 오답 모드)
+    if not st.session_state.is_retry_mode:
+        questions = sub_data['questions']
+    else:
+        questions = st.session_state.current_questions
+
     if st.session_state.q_idx < len(questions):
         curr_q = questions[st.session_state.q_idx]
         
-        st.write(f"진행 상황: **{st.session_state.q_idx + 1} / {len(questions)}**")
-        st.progress((st.session_state.q_idx + 1) / len(questions))
-        st.info(f"Q. {curr_q['q']}")
+        # 진행 바 및 상태 표시
+        mode_text = "🔥 오답 집중 공략" if st.session_state.is_retry_mode else "📝 정규 학습"
+        st.caption(f"{mode_text} | 진행: {st.session_state.q_idx + 1}/{len(questions)}")
+        st.progress((st.session_state.q_idx) / len(questions))
+        
+        # 문제 표시 (큰 글씨 적용)
+        st.markdown(f'<div class="question-text">Q{st.session_state.q_idx + 1}. {curr_q["q"]}</div>', unsafe_allow_html=True)
 
         # 보기 생성 및 셔플 (안정성 확보)
         if not st.session_state.quiz_opts or not st.session_state.answered:
@@ -932,36 +978,75 @@ elif main_data['type'] == 'quiz':
             random.shuffle(opts)
             st.session_state.quiz_opts = opts
 
+        # 보기 버튼 렌더링
         for val in st.session_state.quiz_opts:
-            if st.button(val, key=f"q_{val}", disabled=st.session_state.answered):
+            def check_answer(selected_opt):
                 st.session_state.answered = True
-                if val == curr_q['correct']:
+                if selected_opt == curr_q['correct']:
                     st.session_state.score += 1
-                    st.success("정답입니다! 👏")
                 else:
-                    st.session_state.wrong_pool.append(curr_q)
-                    st.error(f"오답입니다. 정답은: {curr_q['correct']}")
-                st.rerun()
+                    # 중복 추가 방지
+                    if curr_q not in st.session_state.wrong_pool:
+                        st.session_state.wrong_pool.append(curr_q)
 
+            if st.button(val, key=f"q_{val}", disabled=st.session_state.answered, on_click=check_answer, args=(val,)):
+                pass
+        
+        # 정답/오답 결과 및 해설 표시 (버튼 아래에 즉시 표시)
         if st.session_state.answered:
+            # 마지막으로 누른 버튼의 값을 알 수 없으므로, 로직상 맞았는지 틀렸는지는 score 변동으로 추적하거나 UI에서 표시
+            # 여기서는 해설 박스와 정답을 보여줌
+            st.markdown("---")
+            if curr_q['correct'] in st.session_state.quiz_opts: 
+                # 사용자가 무엇을 눌렀는지 UI상으로는 이미 비활성화됨. 
+                # 정답을 명확히 알려줌.
+                st.success(f"✅ 정답: {curr_q['correct']}")
+            
             st.markdown(f"""<div class="explanation-box"><b>💡 마스터 해설</b><br>{curr_q['r']}</div>""", unsafe_allow_html=True)
+            
             if st.button("다음 문제로 ➡️", type="primary"):
                 st.session_state.q_idx += 1
                 st.session_state.answered = False
                 st.session_state.quiz_opts = []
                 st.rerun()
+
     else:
+        # 결과 화면
         st.balloons()
-        st.title("🏆 단원 학습 완료!")
-        st.metric("정답률", f"{(st.session_state.score / len(questions)) * 100:.0f}%")
+        st.title("🏆 학습 완료!")
+        final_score = int((st.session_state.score / len(questions)) * 100)
         
-        if st.session_state.wrong_pool:
-            with st.expander("📝 오답 노트 확인"):
-                for wq in st.session_state.wrong_pool:
-                    st.error(f"Q. {wq['q']}")
-                    st.write(f"정답: **{wq['correct']}**")
-                    st.caption(f"해설: {wq['r']}")
-                    st.markdown("---")
+        col1, col2, col3 = st.columns(3)
+        col1.metric("최종 점수", f"{final_score}점")
+        col2.metric("정답 수", f"{st.session_state.score} / {len(questions)}")
+        col3.metric("오답 수", f"{len(st.session_state.wrong_pool)}개")
+        
+        # 오답 다시 풀기 로직
+        if st.session_state.wrong_pool and not st.session_state.is_retry_mode:
+            st.warning(f"틀린 문제가 {len(st.session_state.wrong_pool)}개 있습니다.")
+            if st.button("🔥 틀린 문제만 다시 풀기"):
+                st.session_state.is_retry_mode = True
+                st.session_state.current_questions = st.session_state.wrong_pool
+                st.session_state.wrong_pool = [] # 풀면서 다시 틀리면 여기로 들어감
+                st.session_state.q_idx = 0
+                st.session_state.score = 0
+                st.session_state.answered = False
+                st.rerun()
+        elif st.session_state.is_retry_mode:
+            st.success("오답 학습을 완료했습니다!")
+            if st.button("메인으로 돌아가기"):
+                st.session_state.is_retry_mode = False
+                st.session_state.wrong_pool = []
+                st.session_state.q_idx = 0
+                st.session_state.score = 0
+                st.rerun()
+        
+        if st.button("🔄 전체 다시 하기"):
+            st.session_state.is_retry_mode = False
+            st.session_state.wrong_pool = []
+            st.session_state.q_idx = 0
+            st.session_state.score = 0
+            st.rerun()
 
 # 6. 하단 팁 섹션
 if "tips" in sub_data:
